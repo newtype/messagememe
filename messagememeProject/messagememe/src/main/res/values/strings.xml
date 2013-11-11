@@ -4,5 +4,8 @@
     <string name="app_name">Message Meme</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="response_yes">Sounds good</string>
+    <string name="response_time">What time?</string>
+    <string name="response_no">Nah</string>
 
 </resources>

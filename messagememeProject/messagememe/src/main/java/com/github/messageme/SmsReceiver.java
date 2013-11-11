@@ -31,6 +31,7 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final int PENDING_POSITIVE = 0;
     private static final int PENDING_NEGATIVE = 1;
     private static final String NOTIFICATION_ID = "notificationId";
+    private static final int PENDING_TIME = 2;
     private static int currentNotificationId = 0;
 
     @Override
@@ -93,10 +94,13 @@ public class SmsReceiver extends BroadcastReceiver {
 
         String contactName = getContactNameFromPhoneNumber(context, phoneNumber);
 
-        Intent positiveReplyIntent = buildQuickResponseIntent(context, phoneNumber, "Sure", currentNotificationId);
+        Intent positiveReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_yes), currentNotificationId);
         PendingIntent positivePending = PendingIntent.getBroadcast(context, PENDING_POSITIVE, positiveReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+        
+        Intent timeReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_time), currentNotificationId);
+        PendingIntent timePending = PendingIntent.getBroadcast(context, PENDING_TIME, timeReplyIntent, currentNotificationId);
 
-        Intent negativeReplyIntent = buildQuickResponseIntent(context, phoneNumber, "Nah", currentNotificationId);
+        Intent negativeReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_no), currentNotificationId);
         PendingIntent negativePending = PendingIntent.getBroadcast(context, PENDING_NEGATIVE, negativeReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // TODO: addAction is Jelly Bean and above.  Switch to NotificationCompat or require JB API level.
@@ -104,8 +108,9 @@ public class SmsReceiver extends BroadcastReceiver {
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle("Message from " + contactName)
                 .setContentText(smsMessage)
-                .addAction(R.drawable.check, "Sure", positivePending)
-                .addAction(R.drawable.x, "Nah", negativePending);
+                .addAction(android.R.drawable.ic_media_play, context.getString(R.string.response_yes), positivePending)
+                .addAction(android.R.drawable.ic_menu_recent_history, context.getString(R.string.response_time), timePending)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, context.getString(R.string.response_no), negativePending);
 
         NotificationManager mNotificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
