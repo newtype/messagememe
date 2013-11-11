@@ -166,6 +166,7 @@ public class SmsReceiver extends BroadcastReceiver {
                     final byte[] thumbnailBytes = photoCursor.getBlob(0);
                     if (thumbnailBytes != null) {
                         thumbnail = BitmapFactory.decodeByteArray(thumbnailBytes, 0, thumbnailBytes.length);
+                        Log.v(TAG, "Loaded image of size " + thumbnail.getWidth() + " x " + thumbnail.getHeight());
                     }
                 }
                 return thumbnail;
