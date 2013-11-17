@@ -11,14 +11,28 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:background="@drawable/ic_launcher"
+        android:layout_marginRight="10dp"
+        />
+
+    <!-- Note: This built-in Android appearance will match default UI but doesn't exist before 2.3 -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title"
+        android:text="Test title."
+        android:layout_toRightOf="@id/image"
         />
 
     <TextView
+        android:id="@+id/content"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="This is a test"
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
+        android:text="The content text."
         android:layout_toRightOf="@id/image"
-        android:layout_centerVertical="true"
+        android:layout_below="@id/title"
         />
+
 
 </RelativeLayout>
