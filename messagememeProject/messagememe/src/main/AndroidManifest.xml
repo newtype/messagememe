@@ -28,7 +28,8 @@
             </intent-filter>
         </activity>
         <receiver android:name=".SmsReceiver">
-            <intent-filter>
+            <!-- set priority to max int to prevent other apps from consuming the intent -->
+            <intent-filter android:priority="2147483647">
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
                 <action android:name="com.github.messageme.AUTO_RESPONSE" />
             </intent-filter>
