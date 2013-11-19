@@ -21,7 +21,6 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -126,7 +125,7 @@ public class SmsReceiver extends BroadcastReceiver {
                 .addAction(android.R.drawable.ic_menu_recent_history, context.getString(R.string.response_time), timePending)
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, context.getString(R.string.response_no), negativePending);
 
-        Bitmap contactPhoto = getContactPhoto(context.getContentResolver(), getContactThumbnailId(context.getContentResolver(), phoneNumber));
+        Bitmap contactPhoto = getContactPhoto(context.getContentResolver(), getContactId(context.getContentResolver(), phoneNumber));
         if (contactPhoto != null) {
             builder.setLargeIcon(contactPhoto);
         }
@@ -152,14 +151,14 @@ public class SmsReceiver extends BroadcastReceiver {
         return null;
     }
 
-    private int getContactThumbnailId(ContentResolver resolver, String phoneNumber) {
-        final Uri uri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-        final Cursor cursor = resolver.query(uri, new String[]{ContactsContract.Contacts.PHOTO_ID}, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
-        int thumbnailId = 0;
+    private long getContactId(ContentResolver resolver, String phoneNumber) {
+        final Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+        final Cursor cursor = resolver.query(uri, new String[]{ContactsContract.Contacts.PHOTO_ID, ContactsContract.Contacts._ID}, null, null, null);
+        long thumbnailId = 0;
 
         try {
             if (cursor.moveToFirst()) {
-                thumbnailId = cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_ID));
+                thumbnailId = cursor.getLong(cursor.getColumnIndex(ContactsContract.Contacts._ID));
             }
         }
         finally {
@@ -169,28 +168,20 @@ public class SmsReceiver extends BroadcastReceiver {
         return thumbnailId;
     }
 
-    private Bitmap getContactPhoto(ContentResolver resolver, int thumbnailId) {
-        if (thumbnailId == 0) {
+    private Bitmap getContactPhoto(ContentResolver resolver, long contactId) {
+        if (contactId == 0) {
             return null;
         }
 
-        final Uri uri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, thumbnailId);
-        final Cursor cursor = resolver.query(uri, new String[]{ContactsContract.CommonDataKinds.Photo.PHOTO}, null, null, null);
+        Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
+        InputStream photoInput = ContactsContract.Contacts.openContactPhotoInputStream(resolver, contactUri, false);
 
-        Bitmap thumbnail = null;
+        if (photoInput == null) {
+            return null;
+        }
 
-        try {
-            if (cursor.moveToFirst()) {
-                final byte[] thumbnailBytes = cursor.getBlob(0);
-                if (thumbnailBytes != null) {
-                    thumbnail = BitmapFactory.decodeByteArray(thumbnailBytes, 0, thumbnailBytes.length);
-                    Log.v(TAG, "Loaded image of size " + thumbnail.getWidth() + " x " + thumbnail.getHeight());
-                }
-            }
-        }
-        finally {
-            cursor.close();
-        }
+        Bitmap thumbnail = BitmapFactory.decodeStream(photoInput);
+        Log.v(TAG, "Loaded image of size " + thumbnail.getWidth() + " x " + thumbnail.getHeight());
 
         return thumbnail;
     }
