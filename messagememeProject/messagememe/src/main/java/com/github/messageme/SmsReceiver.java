@@ -21,6 +21,7 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -125,7 +126,7 @@ public class SmsReceiver extends BroadcastReceiver {
                 .addAction(android.R.drawable.ic_menu_recent_history, context.getString(R.string.response_time), timePending)
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, context.getString(R.string.response_no), negativePending);
 
-        Bitmap contactPhoto = getContactPhoto(context.getContentResolver(), getContactId(context.getContentResolver(), phoneNumber));
+        Bitmap contactPhoto = getContactPhoto(context, getContactId(context.getContentResolver(), phoneNumber));
         if (contactPhoto != null) {
             builder.setLargeIcon(contactPhoto);
         }
@@ -145,8 +146,11 @@ public class SmsReceiver extends BroadcastReceiver {
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
         if (cursor.moveToFirst()) {
             int index = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME);
-            return cursor.getString(index);
+            String contactName = cursor.getString(index);
+            cursor.close();
+            return contactName;
         }
+        cursor.close();
 
         return null;
     }
@@ -168,22 +172,50 @@ public class SmsReceiver extends BroadcastReceiver {
         return thumbnailId;
     }
 
-    private Bitmap getContactPhoto(ContentResolver resolver, long contactId) {
+    private Bitmap getContactPhoto(Context context, long contactId) {
         if (contactId == 0) {
             return null;
         }
 
+        ContentResolver resolver = context.getContentResolver();
+
         Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
-        InputStream photoInput = ContactsContract.Contacts.openContactPhotoInputStream(resolver, contactUri, false);
+        InputStream photoInput = ContactsContract.Contacts.openContactPhotoInputStream(resolver, contactUri, true);
 
         if (photoInput == null) {
             return null;
         }
 
         Bitmap thumbnail = BitmapFactory.decodeStream(photoInput);
-        Log.v(TAG, "Loaded image of size " + thumbnail.getWidth() + " x " + thumbnail.getHeight());
+        try {
+            photoInput.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to close contact photo input stream", e);
+        }
 
-        return thumbnail;
+        return scaleBitmap(thumbnail, context.getResources().getDimension(android.R.dimen.notification_large_icon_width), context.getResources().getDimension(android.R.dimen.notification_large_icon_height));
+    }
+
+    /**
+     * Scale the bitmap up or down to match the target width and height.
+     * Scales along the dimension of least change.
+     */
+    private Bitmap scaleBitmap(Bitmap bitmap, float targetWidth, float targetHeight) {
+        // compute larger scale factor
+        float scaleX = targetWidth / bitmap.getWidth();
+        float scaleY = targetHeight / bitmap.getHeight();
+
+        float scale = scaleX;
+        if (scaleY > scale)
+            scale = scaleY;
+
+        // TODO: Rounding might be more appropriate
+        int scaledHeight = (int) (scale * bitmap.getHeight());
+        int scaledWidth = (int) (scale * bitmap.getWidth());
+
+        // scale; the ImageView will crop it
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, false);
+        return scaledBitmap;
     }
 
     private Intent buildQuickResponseIntent(Context context, String destinationAddress, String body, int notificationId) {
