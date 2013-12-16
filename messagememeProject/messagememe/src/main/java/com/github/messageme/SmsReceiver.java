@@ -92,6 +92,9 @@ public class SmsReceiver extends BroadcastReceiver {
         }
         else {
             SmsManager.getDefault().sendTextMessage(destination, null, body, null, null);
+
+            SmsDatabase database = new SmsDatabase(context.getContentResolver());
+            database.writeSentMessage(destination, body);
         }
 
         // clear the notification
