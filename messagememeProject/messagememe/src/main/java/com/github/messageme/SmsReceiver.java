@@ -42,7 +42,7 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final int PENDING_NEGATIVE = 1;
     private static final String NOTIFICATION_ID = "notificationId";
     private static final int PENDING_TIME = 2;
-    private static final boolean LOG_SMS_ONLY = true;
+    private static final boolean LOG_SMS_ONLY = false;
     private static final String NOTIFICATION_MESSAGE_SEPARATOR = "   ";
 
     private final NotificationIdManager idManager = new StaticVarNotificationIdManager();
