@@ -21,6 +21,8 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.github.messageme.com.github.messageme.interfaces.NotificationIdManager;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -38,7 +40,8 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final String NOTIFICATION_ID = "notificationId";
     private static final int PENDING_TIME = 2;
     private static final boolean LOG_SMS_ONLY = false;
-    private static int currentNotificationId = 0;
+
+    private static final NotificationIdManager idManager = new StaticVarNotificationIdManager();
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -107,6 +110,8 @@ public class SmsReceiver extends BroadcastReceiver {
             return;
         }
 
+        int currentNotificationId = idManager.getId(phoneNumber);
+
         // TODO: This code should load the quick response configuration from somewhere and build more programatically
         Intent positiveReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_yes), currentNotificationId);
         PendingIntent positivePending = PendingIntent.getBroadcast(context, PENDING_POSITIVE, positiveReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -135,8 +140,6 @@ public class SmsReceiver extends BroadcastReceiver {
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(currentNotificationId, builder.build());
-
-        currentNotificationId++;
     }
 
     private String getContactNameFromPhoneNumber(Context context, String phoneNumber) {
@@ -222,7 +225,7 @@ public class SmsReceiver extends BroadcastReceiver {
         Intent quickResponseIntent = new Intent(AUTO_RESPONSE_INTENT);
         quickResponseIntent.putExtra(DESTINATION_ADDRESS, destinationAddress);
         quickResponseIntent.putExtra(BODY, body);
-        quickResponseIntent.putExtra(NOTIFICATION_ID, currentNotificationId);
+        quickResponseIntent.putExtra(NOTIFICATION_ID, notificationId);
         return quickResponseIntent;
     }
 
