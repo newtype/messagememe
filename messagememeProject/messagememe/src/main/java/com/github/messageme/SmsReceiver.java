@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
+ * Handles SMS received intents.
+ *
  * Created by ryan on 11/9/13.
  */
 public class SmsReceiver extends BroadcastReceiver {
@@ -40,7 +42,7 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final int PENDING_NEGATIVE = 1;
     private static final String NOTIFICATION_ID = "notificationId";
     private static final int PENDING_TIME = 2;
-    private static final boolean LOG_SMS_ONLY = false;
+    private static final boolean LOG_SMS_ONLY = true;
     private static final String NOTIFICATION_MESSAGE_SEPARATOR = "   ";
 
     private final NotificationIdManager idManager = new StaticVarNotificationIdManager();
@@ -65,6 +67,8 @@ public class SmsReceiver extends BroadcastReceiver {
 
                 final Object[] pdusObj = (Object[]) bundle.get("pdus");
 
+                // In what situations will this iterate more than once?
+                // Is there the chance of being spammy?
                 for (int i = 0; i < pdusObj.length; i++) {
 
                     SmsMessage currentMessage = SmsMessage.createFromPdu((byte[]) pdusObj[i]);
@@ -117,14 +121,12 @@ public class SmsReceiver extends BroadcastReceiver {
             Log.v(TAG, "No contact name for " + phoneNumber + ", not showing popup");
             return;
         }
+        else {
+            Log.v(TAG, "Received message from " + contactName + " (" + phoneNumber + "): " + smsMessage);
+        }
 
-        // debugging: query the SMS database for unread messages
         SmsDatabase database = new SmsDatabase(context.getContentResolver());
         List<String> unreadMessages = database.getUnread(phoneNumber);
-        Log.d(TAG, "Unread messages from " + contactName + " (" + unreadMessages.size() + ")");
-        for (String text : unreadMessages) {
-            Log.d(TAG, "\t" + text);
-        }
 
         int currentNotificationId = idManager.getId(phoneNumber);
 
@@ -133,7 +135,7 @@ public class SmsReceiver extends BroadcastReceiver {
         PendingIntent positivePending = PendingIntent.getBroadcast(context, PENDING_POSITIVE, positiveReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
         
         Intent timeReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_time), currentNotificationId);
-        PendingIntent timePending = PendingIntent.getBroadcast(context, PENDING_TIME, timeReplyIntent, currentNotificationId);
+        PendingIntent timePending = PendingIntent.getBroadcast(context, PENDING_TIME, timeReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         Intent negativeReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_no), currentNotificationId);
         PendingIntent negativePending = PendingIntent.getBroadcast(context, PENDING_NEGATIVE, negativeReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -158,6 +160,12 @@ public class SmsReceiver extends BroadcastReceiver {
         notificationManager.notify(currentNotificationId, builder.build());
     }
 
+    /**
+     * Build the "long" text for the notification from the smsMessage plus any unread messages.
+     * @param unreadMessages Any unread messages from the same sender, typically empty.  Assumed non-null.
+     * @param smsMessage The body of the active SMS message.
+     * @return notification text
+     */
     private CharSequence buildNotificationText(List<String> unreadMessages, String smsMessage) {
         StringBuilder builder = new StringBuilder();
 
@@ -168,12 +176,14 @@ public class SmsReceiver extends BroadcastReceiver {
 
         builder.append(smsMessage);
 
+        // TODO: Test this code.
+        // 1) I couldn't seem to trigger it
+        // 2) Due to the buttons, the text is only a single line in the layout, so 255 is too much.
         if (builder.length() > 255) {
+            Log.d(TAG, "Trimming notification body to size");
             int lastSpace = builder.lastIndexOf(" ", 255);
             builder.delete(lastSpace, builder.length());
             builder.append(" ... (" + (unreadMessages.size() + 1) + ")");
-
-            Log.d(TAG, "Trimmed notification body to size");
         }
 
         return builder;
@@ -184,13 +194,21 @@ public class SmsReceiver extends BroadcastReceiver {
         // Query the filter URI
         String[] projection = new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME};
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
-        if (cursor.moveToFirst()) {
-            int index = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME);
-            String contactName = cursor.getString(index);
-            cursor.close();
-            return contactName;
+
+        if (cursor == null) {
+            return null;
         }
-        cursor.close();
+
+        try {
+            if (cursor.moveToFirst()) {
+                int index = cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME);
+                String contactName = cursor.getString(index);
+                return contactName;
+            }
+        }
+        finally {
+            cursor.close();
+        }
 
         return null;
     }

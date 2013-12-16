@@ -5,7 +5,10 @@ import com.github.messageme.com.github.messageme.interfaces.NotificationIdManage
 import java.util.HashMap;
 
 /**
- * Keeps track of notification IDs.
+ * Keeps track of notification IDs by using static variables.
+ * This will break in low-memory situations where our
+ * process is killed.
+ *
  * Created by keith on 12/16/13.
  */
 public class StaticVarNotificationIdManager implements NotificationIdManager {

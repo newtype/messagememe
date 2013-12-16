@@ -22,6 +22,8 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
     public static final String SMS_DATE = "date";
     public static final String SMS_BODY = "body";
     public static final String SMS_READ = "read";
+    public static final String SMS_ID = "_id";
+
     private static final String TAG = "SmsDatabase";
 
     private ContentResolver cr;
@@ -48,7 +50,7 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
         final String SORT_ORDER = "date ASC";
 
         Cursor cursor = cr.query(INBOX_CONTENT_URI,
-                new String[] { "_id", SMS_ADDRESS, SMS_DATE, SMS_BODY},
+                new String[] { SMS_ID, SMS_ADDRESS, SMS_DATE, SMS_BODY },
                 WHERE_CONDITION,
                 new String[] { phoneNumber },
                 SORT_ORDER);
@@ -57,15 +59,19 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
             return messages;
         }
 
-        if (cursor.moveToFirst()) {
-            int textColumn = cursor.getColumnIndex(SMS_BODY);
+        try {
+            if (cursor.moveToFirst()) {
+                int textColumn = cursor.getColumnIndex(SMS_BODY);
 
-            do {
-                String text = cursor.getString(textColumn);
-                messages.add(text);
-            } while (cursor.moveToNext());
+                do {
+                    String text = cursor.getString(textColumn);
+                    messages.add(text);
+                } while (cursor.moveToNext());
+            }
         }
-        cursor.close();
+        finally {
+            cursor.close();
+        }
 
         return messages;
     }
