@@ -25,6 +25,7 @@ import com.github.messageme.com.github.messageme.interfaces.NotificationIdManage
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Created by ryan on 11/9/13.
@@ -40,8 +41,9 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final String NOTIFICATION_ID = "notificationId";
     private static final int PENDING_TIME = 2;
     private static final boolean LOG_SMS_ONLY = false;
+    private static final String NOTIFICATION_MESSAGE_SEPARATOR = "   ";
 
-    private static final NotificationIdManager idManager = new StaticVarNotificationIdManager();
+    private final NotificationIdManager idManager = new StaticVarNotificationIdManager();
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -110,6 +112,14 @@ public class SmsReceiver extends BroadcastReceiver {
             return;
         }
 
+        // debugging: query the SMS database for unread messages
+        SmsDatabase database = new SmsDatabase(context.getContentResolver());
+        List<String> unreadMessages = database.getUnread(phoneNumber);
+        Log.d(TAG, "Unread messages from " + contactName + " (" + unreadMessages.size() + ")");
+        for (String text : unreadMessages) {
+            Log.d(TAG, "\t" + text);
+        }
+
         int currentNotificationId = idManager.getId(phoneNumber);
 
         // TODO: This code should load the quick response configuration from somewhere and build more programatically
@@ -126,7 +136,7 @@ public class SmsReceiver extends BroadcastReceiver {
         Notification.Builder builder = new Notification.Builder(context)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle(contactName)
-                .setContentText(smsMessage)
+                .setContentText(buildNotificationText(unreadMessages, smsMessage))
                 .addAction(android.R.drawable.ic_media_play, context.getString(R.string.response_yes), positivePending)
                 .addAction(android.R.drawable.ic_menu_recent_history, context.getString(R.string.response_time), timePending)
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, context.getString(R.string.response_no), negativePending);
@@ -140,6 +150,27 @@ public class SmsReceiver extends BroadcastReceiver {
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(currentNotificationId, builder.build());
+    }
+
+    private CharSequence buildNotificationText(List<String> unreadMessages, String smsMessage) {
+        StringBuilder builder = new StringBuilder();
+
+        for (String unreadMessage : unreadMessages) {
+            builder.append(unreadMessage);
+            builder.append(NOTIFICATION_MESSAGE_SEPARATOR);
+        }
+
+        builder.append(smsMessage);
+
+        if (builder.length() > 255) {
+            int lastSpace = builder.lastIndexOf(" ", 255);
+            builder.delete(lastSpace, builder.length());
+            builder.append(" ... (" + (unreadMessages.size() + 1) + ")");
+
+            Log.d(TAG, "Trimmed notification body to size");
+        }
+
+        return builder;
     }
 
     private String getContactNameFromPhoneNumber(Context context, String phoneNumber) {
