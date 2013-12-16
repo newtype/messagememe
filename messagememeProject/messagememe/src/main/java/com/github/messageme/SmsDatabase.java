@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
     public static final String SMS_DATE = "date";
     public static final String SMS_BODY = "body";
     public static final String SMS_READ = "read";
+    private static final String TAG = "SmsDatabase";
 
     private ContentResolver cr;
 
@@ -30,7 +32,12 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
 
     @Override
     public void markRead(String phoneNumber) {
-        throw new RuntimeException("markRead function isn't implemented yet.");
+        Log.v(TAG, "Marking messages from " + phoneNumber + " as read");
+        final String WHERE_CONDITION = SMS_READ + " = 0 AND " + SMS_ADDRESS + " = ?";
+
+        ContentValues values = new ContentValues();
+        values.put(SMS_READ, true);
+        cr.update(INBOX_CONTENT_URI, values, WHERE_CONDITION, new String[] { phoneNumber });
     }
 
     @Override
@@ -65,8 +72,6 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
 
     @Override
     public void writeSentMessage(String phoneNumber, String messageBody) {
-        //throw new RuntimeException("writeSentMessage not implemented.");
-
         ContentValues values = new ContentValues();
         values.put(SMS_ADDRESS, phoneNumber);
         values.put(SMS_BODY, messageBody);

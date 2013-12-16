@@ -91,9 +91,12 @@ public class SmsReceiver extends BroadcastReceiver {
             Toast.makeText(context, "Fake send to " + destination, Toast.LENGTH_LONG).show();
         }
         else {
+            // TODO: Set pending intents for success/fail and alert the user on failure
+            // and maybe don't write to sent messages if it failed to send
             SmsManager.getDefault().sendTextMessage(destination, null, body, null, null);
 
             SmsDatabase database = new SmsDatabase(context.getContentResolver());
+            database.markRead(destination);
             database.writeSentMessage(destination, body);
         }
 
