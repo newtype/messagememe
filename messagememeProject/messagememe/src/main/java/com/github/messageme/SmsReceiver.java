@@ -69,9 +69,9 @@ public class SmsReceiver extends BroadcastReceiver {
 
                 // In what situations will this iterate more than once?
                 // Is there the chance of being spammy?
-                for (int i = 0; i < pdusObj.length; i++) {
+                for (Object pdu : pdusObj) {
 
-                    SmsMessage currentMessage = SmsMessage.createFromPdu((byte[]) pdusObj[i]);
+                    SmsMessage currentMessage = SmsMessage.createFromPdu((byte[]) pdu);
 
                     showNotification(context, currentMessage);
 
