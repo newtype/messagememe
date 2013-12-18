@@ -46,6 +46,7 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final String NOTIFICATION_MESSAGE_SEPARATOR = "   ";
 
     private final NotificationIdManager idManager = new StaticVarNotificationIdManager();
+    private SmsDatabase smsDatabase = null;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -99,15 +100,22 @@ public class SmsReceiver extends BroadcastReceiver {
             // and maybe don't write to sent messages if it failed to send
             SmsManager.getDefault().sendTextMessage(destination, null, body, null, null);
 
-            SmsDatabase database = new SmsDatabase(context.getContentResolver());
-            database.markRead(destination);
-            database.writeSentMessage(destination, body);
+            if (smsDatabase == null) {
+                smsDatabase = new SmsDatabase(context.getContentResolver());
+            }
+            smsDatabase.markRead(destination);
+            smsDatabase.writeSentMessage(destination, body);
         }
 
         // clear the notification
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(intent.getIntExtra(NOTIFICATION_ID, -1));
+
+        if (smsDatabase == null) {
+            smsDatabase = new SmsDatabase(context.getContentResolver());
+        }
+        smsDatabase.checkUnregisterObserver();
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -125,8 +133,10 @@ public class SmsReceiver extends BroadcastReceiver {
             Log.v(TAG, "Received message from " + contactName + " (" + phoneNumber + "): " + smsMessage);
         }
 
-        SmsDatabase database = new SmsDatabase(context.getContentResolver());
-        List<String> unreadMessages = database.getUnread(phoneNumber);
+        if (smsDatabase == null) {
+            smsDatabase = new SmsDatabase(context.getContentResolver());
+        }
+        List<String> unreadMessages = smsDatabase.getUnread(phoneNumber);
 
         int currentNotificationId = idManager.getId(phoneNumber);
 
@@ -158,6 +168,8 @@ public class SmsReceiver extends BroadcastReceiver {
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(currentNotificationId, builder.build());
+
+        smsDatabase.checkCreateObserver(context, idManager);
     }
 
     /**
