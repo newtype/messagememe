@@ -40,7 +40,7 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
 
     @Override
     public void markRead(String phoneNumber) {
-        Log.v(TAG, "Marking messages from " + phoneNumber + " as read");
+        Log.v(TAG, "markRead(" + phoneNumber + ")");
         final String WHERE_CONDITION = SMS_READ + " = 0 AND " + SMS_ADDRESS + " = ?";
 
         ContentValues values = new ContentValues();
@@ -140,25 +140,32 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
         Log.v(TAG, "checkCreateObserver");
 
         if (observer != null) {
+            Log.v(TAG, "\taborting, observer already exists");
             return;
         }
 
+        // TODO: Handler should be set on current thread
         observer = new SmsObserver(null, context, idManager);
 
+        cr.registerContentObserver(Uri.parse("content://sms"), true, observer);
+
+        /*
         final String WHERE_CONDITION = SMS_READ + " = 0";
         observerCursor = cr.query(INBOX_CONTENT_URI,
-                new String[] { SMS_ID, SMS_ADDRESS },
-                WHERE_CONDITION,
+                new String[] { SMS_ID, SMS_ADDRESS, SMS_READ },
+                null,
                 null,
                 null);
 
         observerCursor.registerContentObserver(observer);
+        */
         Log.v(TAG, "\tregistered");
     }
 
     public void checkUnregisterObserver() {
         Log.v(TAG, "checkUnregisterObserver");
         if (observer == null) {
+            Log.v(TAG, "\texiting early, observer is already null");
             return;
         }
 
@@ -169,8 +176,21 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
         }
 
         // if there are no active notifications
+        /*
         observerCursor.unregisterContentObserver(observer);
         observerCursor.close();
+        observerCursor = null;
+        */
+        observer = null;
         Log.v(TAG, "\tunregistered!");
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (observerCursor != null) {
+            observerCursor.close();
+            Log.v(TAG, "finalize()");
+        }
+        super.finalize();
     }
 }

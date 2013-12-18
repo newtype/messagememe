@@ -1,10 +1,8 @@
 package com.github.messageme;
 
 import android.app.NotificationManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
-import android.database.Cursor;
 import android.os.Handler;
 import android.util.Log;
 
@@ -39,7 +37,7 @@ public class SmsObserver extends ContentObserver {
         HashMap<String,int[]> unreadCounts = new SmsDatabase(context.getContentResolver()).getUnreadCounts(phoneNumbers);
 
         for (Map.Entry<String, int[]> pair : unreadCounts.entrySet()) {
-            Log.v(TAG, pair.getKey() + ": " + pair.getValue()[0] + " unread messages");
+            Log.v(TAG, "\t" + pair.getKey() + ": " + pair.getValue()[0] + " unread messages");
             if (pair.getValue()[0] == 0) {
                 dismissNotification(pair.getKey());
             }
