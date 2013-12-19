@@ -30,7 +30,7 @@ public class SmsDatabase {
 
     private static final String TAG = "SmsDatabase";
 
-    private ContentResolver cr;
+    private final ContentResolver cr;
     private SmsObserver observer;
 
     public SmsDatabase(ContentResolver resolver) {
