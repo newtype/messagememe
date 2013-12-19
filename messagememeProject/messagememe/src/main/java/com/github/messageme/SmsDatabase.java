@@ -104,6 +104,14 @@ public class SmsDatabase {
         cr.insert(SENT_CONTENT_URI, values);
     }
 
+    /**
+     * Get the number of unread SMS messages for the listed phone numbers.
+     * The values of the HashMap are singleton int arrays that store the count.
+     * If there are unread messages for other contacts, this will count them as well.
+     *
+     * @param phoneNumbers list of phone numbers to look for
+     * @return HashMap that maps phone numbers to counts, where counts are stored as singleton int arrays
+     */
     public HashMap<String, int[]> getUnreadCounts(Iterable<String> phoneNumbers) {
         final String WHERE_CONDITION = SMS_READ + " = 0";
 
@@ -147,6 +155,12 @@ public class SmsDatabase {
         return unreadCounts;
     }
 
+    /**
+     * Create the SMS database observer if necessary.
+     *
+     * @param context Android context, used by SmsObserver
+     * @param idManager
+     */
     public void checkCreateObserver(Context context, NotificationIdManager idManager) {
         Log.v(TAG, "checkCreateObserver");
 
@@ -163,6 +177,9 @@ public class SmsDatabase {
         Log.v(TAG, "\tregistered");
     }
 
+    /**
+     * Unregister the SMS database observer if there are no active notifications.
+     */
     public void checkUnregisterObserver() {
         Log.v(TAG, "checkUnregisterObserver");
         if (observer == null) {

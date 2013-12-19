@@ -45,7 +45,7 @@ public class StaticVarNotificationIdManager implements NotificationIdManager {
 
     @Override
     public void addNotificationPhoneNumber(String phoneNumber) {
-        // does nothing in this implementation - getting the ID adds a phone number to the set
+        // does nothing in this implementation - getting the ID already adds a phone number to the set
     }
 
     @Override

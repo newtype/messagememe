@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Observer/listener for changes to the SMS inbox
+ * Observer/listener for changes to the SMS inbox.
  *
  * Created by keith on 12/18/13.
  */
@@ -44,6 +44,11 @@ public class SmsObserver extends ContentObserver {
         }
     }
 
+    /**
+     * Dismiss the Android notification and remove the notification ID from
+     * the notification ID manager.
+     * @param phoneNumber the phone number of the contact
+     */
     private void dismissNotification(String phoneNumber) {
         Log.v(TAG, "dismissNotification(" + phoneNumber + ")");
 
