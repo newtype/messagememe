@@ -28,6 +28,11 @@ public class SmsDatabase {
     public static final String SMS_READ = "read";
     public static final String SMS_ID = "_id";
 
+    public static final String WHERE_UNREAD = SMS_READ + " = 0";
+    public static final String WHERE_UNREAD_AND_ADDRESS = WHERE_UNREAD + " AND " + SMS_ADDRESS + " = ?";
+
+    public static final String SORT_CHRONOLOGICAL = "date ASC";
+
     private static final String TAG = "SmsDatabase";
 
     private final ContentResolver cr;
@@ -43,11 +48,10 @@ public class SmsDatabase {
      */
     public void markRead(String phoneNumber) {
         Log.v(TAG, "markRead(" + phoneNumber + ")");
-        final String WHERE_CONDITION = SMS_READ + " = 0 AND " + SMS_ADDRESS + " = ?";
 
         ContentValues values = new ContentValues();
         values.put(SMS_READ, true);
-        cr.update(INBOX_CONTENT_URI, values, WHERE_CONDITION, new String[] { phoneNumber });
+        cr.update(INBOX_CONTENT_URI, values, WHERE_UNREAD_AND_ADDRESS, new String[] { phoneNumber });
     }
 
     /**
@@ -59,14 +63,11 @@ public class SmsDatabase {
     public List<String> getUnread(String phoneNumber) {
         ArrayList<String> messages = new ArrayList<String>();
 
-        final String WHERE_CONDITION = SMS_READ + " = 0 AND " + SMS_ADDRESS + " = ?";
-        final String SORT_ORDER = "date ASC";
-
         Cursor cursor = cr.query(INBOX_CONTENT_URI,
                 new String[] { SMS_ID, SMS_ADDRESS, SMS_DATE, SMS_BODY },
-                WHERE_CONDITION,
+                WHERE_UNREAD_AND_ADDRESS,
                 new String[] { phoneNumber },
-                SORT_ORDER);
+                SORT_CHRONOLOGICAL);
 
         if (cursor == null) {
             return messages;
@@ -113,12 +114,10 @@ public class SmsDatabase {
      * @return HashMap that maps phone numbers to counts, where counts are stored as singleton int arrays
      */
     public HashMap<String, int[]> getUnreadCounts(Iterable<String> phoneNumbers) {
-        final String WHERE_CONDITION = SMS_READ + " = 0";
-
         // Note: This query probes all unread messages regardless of contact.
         Cursor cursor = cr.query(INBOX_CONTENT_URI,
                 new String[] { SMS_ID, SMS_ADDRESS },
-                WHERE_CONDITION,
+                WHERE_UNREAD,
                 null,
                 null);
 
