@@ -141,13 +141,13 @@ public class SmsReceiver extends BroadcastReceiver {
         int currentNotificationId = idManager.getId(phoneNumber);
 
         // TODO: This code should load the quick response configuration from somewhere and build more programatically
-        Intent positiveReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_yes), currentNotificationId);
+        Intent positiveReplyIntent = buildQuickResponseIntent(phoneNumber, context.getString(R.string.response_yes), currentNotificationId);
         PendingIntent positivePending = PendingIntent.getBroadcast(context, PENDING_POSITIVE, positiveReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
         
-        Intent timeReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_time), currentNotificationId);
+        Intent timeReplyIntent = buildQuickResponseIntent(phoneNumber, context.getString(R.string.response_time), currentNotificationId);
         PendingIntent timePending = PendingIntent.getBroadcast(context, PENDING_TIME, timeReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        Intent negativeReplyIntent = buildQuickResponseIntent(context, phoneNumber, context.getString(R.string.response_no), currentNotificationId);
+        Intent negativeReplyIntent = buildQuickResponseIntent(phoneNumber, context.getString(R.string.response_no), currentNotificationId);
         PendingIntent negativePending = PendingIntent.getBroadcast(context, PENDING_NEGATIVE, negativeReplyIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // TODO: addAction is Jelly Bean and above.  Switch to NotificationCompat or require JB API level.
@@ -195,7 +195,7 @@ public class SmsReceiver extends BroadcastReceiver {
             Log.d(TAG, "Trimming notification body to size");
             int lastSpace = builder.lastIndexOf(" ", 255);
             builder.delete(lastSpace, builder.length());
-            builder.append(" ... (" + (unreadMessages.size() + 1) + ")");
+            builder.append(" ... (").append(unreadMessages.size() + 1).append(")");
         }
 
         return builder;
@@ -284,11 +284,10 @@ public class SmsReceiver extends BroadcastReceiver {
         int scaledWidth = (int) (scale * bitmap.getWidth());
 
         // scale; the ImageView will crop it
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, false);
-        return scaledBitmap;
+        return Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, false);
     }
 
-    private Intent buildQuickResponseIntent(Context context, String destinationAddress, String body, int notificationId) {
+    private Intent buildQuickResponseIntent(String destinationAddress, String body, int notificationId) {
         Intent quickResponseIntent = new Intent(AUTO_RESPONSE_INTENT);
         quickResponseIntent.putExtra(DESTINATION_ADDRESS, destinationAddress);
         quickResponseIntent.putExtra(BODY, body);

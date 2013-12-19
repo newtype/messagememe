@@ -21,6 +21,10 @@ public class SmsObserver extends ContentObserver {
     private static final String TAG = "SmsObserver";
     private final Context context;
     private final Handler handler;
+
+    /**
+     * Note: This is package private so that SmsDatabase can use this idManager to query active notifications
+     */
     final NotificationIdManager idManager;
 
     public SmsObserver(Handler handler, Context context, NotificationIdManager idManager) {
@@ -62,7 +66,7 @@ public class SmsObserver extends ContentObserver {
     }
 
     public Set<String> getActiveNotificationPhoneNumbers() {
-        Log.v(TAG, "getActiveNotificationPhoneNumbers");
+        Log.v(TAG, "getActiveNotificationPhoneNumbers()");
         return idManager.getActiveNotificationPhoneNumbers();
     }
 
