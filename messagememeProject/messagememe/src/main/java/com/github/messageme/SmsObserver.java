@@ -6,7 +6,7 @@ import android.database.ContentObserver;
 import android.os.Handler;
 import android.util.Log;
 
-import com.github.messageme.com.github.messageme.interfaces.NotificationIdManager;
+import com.github.messageme.interfaces.NotificationIdManager;
 
 import java.util.HashMap;
 import java.util.Map;

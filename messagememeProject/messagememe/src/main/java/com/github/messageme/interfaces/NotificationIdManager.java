@@ -1,4 +1,4 @@
-package com.github.messageme.com.github.messageme.interfaces;
+package com.github.messageme.interfaces;
 
 import java.util.Set;
 

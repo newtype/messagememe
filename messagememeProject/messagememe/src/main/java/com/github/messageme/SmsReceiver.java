@@ -21,7 +21,7 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.github.messageme.com.github.messageme.interfaces.NotificationIdManager;
+import com.github.messageme.interfaces.NotificationIdManager;
 
 import java.io.IOException;
 import java.io.InputStream;

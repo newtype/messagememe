@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
-import com.github.messageme.com.github.messageme.interfaces.NotificationIdManager;
+import com.github.messageme.interfaces.NotificationIdManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import java.util.List;
  *
  * Created by keith on 12/16/13.
  */
-public class SmsDatabase implements com.github.messageme.com.github.messageme.interfaces.SmsDatabase {
+public class SmsDatabase {
     public static final Uri INBOX_CONTENT_URI = Uri.parse("content://sms/inbox");
     public static final Uri SENT_CONTENT_URI = Uri.parse("content://sms/sent");
     public static final String SMS_ADDRESS = "address";
@@ -32,13 +32,15 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
 
     private ContentResolver cr;
     private SmsObserver observer;
-    private Cursor observerCursor;
 
     public SmsDatabase(ContentResolver resolver) {
         cr = resolver;
     }
 
-    @Override
+    /**
+     * Mark all messages from this contact as read.
+     * @param phoneNumber phone number (not normalized)
+     */
     public void markRead(String phoneNumber) {
         Log.v(TAG, "markRead(" + phoneNumber + ")");
         final String WHERE_CONDITION = SMS_READ + " = 0 AND " + SMS_ADDRESS + " = ?";
@@ -48,7 +50,12 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
         cr.update(INBOX_CONTENT_URI, values, WHERE_CONDITION, new String[] { phoneNumber });
     }
 
-    @Override
+    /**
+     * Get all unread messages from this contact in
+     * the order they were received.
+     * @param phoneNumber phone number (not normalized)
+     * @return list of the messages, in chronological order
+     */
     public List<String> getUnread(String phoneNumber) {
         ArrayList<String> messages = new ArrayList<String>();
 
@@ -82,7 +89,11 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
         return messages;
     }
 
-    @Override
+    /**
+     * Write this sent message to the SMS database.
+     * @param phoneNumber recipient's phone number
+     * @param messageBody the text
+     */
     public void writeSentMessage(String phoneNumber, String messageBody) {
         ContentValues values = new ContentValues();
         values.put(SMS_ADDRESS, phoneNumber);
@@ -96,7 +107,7 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
     public HashMap<String, int[]> getUnreadCounts(Iterable<String> phoneNumbers) {
         final String WHERE_CONDITION = SMS_READ + " = 0";
 
-        // TODO: This query probes all unread messages regardless of contact.
+        // Note: This query probes all unread messages regardless of contact.
         Cursor cursor = cr.query(INBOX_CONTENT_URI,
                 new String[] { SMS_ID, SMS_ADDRESS },
                 WHERE_CONDITION,
@@ -149,16 +160,6 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
 
         cr.registerContentObserver(Uri.parse("content://sms"), true, observer);
 
-        /*
-        final String WHERE_CONDITION = SMS_READ + " = 0";
-        observerCursor = cr.query(INBOX_CONTENT_URI,
-                new String[] { SMS_ID, SMS_ADDRESS, SMS_READ },
-                null,
-                null,
-                null);
-
-        observerCursor.registerContentObserver(observer);
-        */
         Log.v(TAG, "\tregistered");
     }
 
@@ -176,21 +177,7 @@ public class SmsDatabase implements com.github.messageme.com.github.messageme.in
         }
 
         // if there are no active notifications
-        /*
-        observerCursor.unregisterContentObserver(observer);
-        observerCursor.close();
-        observerCursor = null;
-        */
         observer = null;
         Log.v(TAG, "\tunregistered!");
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        if (observerCursor != null) {
-            observerCursor.close();
-            Log.v(TAG, "finalize()");
-        }
-        super.finalize();
     }
 }

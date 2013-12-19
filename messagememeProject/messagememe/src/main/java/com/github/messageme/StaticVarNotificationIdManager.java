@@ -1,6 +1,6 @@
 package com.github.messageme;
 
-import com.github.messageme.com.github.messageme.interfaces.NotificationIdManager;
+import com.github.messageme.interfaces.NotificationIdManager;
 
 import java.util.HashMap;
 import java.util.Set;
