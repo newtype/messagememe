@@ -26,6 +26,7 @@ public class SmsDatabase {
     public static final String SMS_DATE = "date";
     public static final String SMS_BODY = "body";
     public static final String SMS_READ = "read";
+    public static final String SMS_SEEN = "seen";
     public static final String SMS_ID = "_id";
 
     public static final String WHERE_UNREAD = SMS_READ + " = 0";
@@ -51,6 +52,7 @@ public class SmsDatabase {
 
         ContentValues values = new ContentValues();
         values.put(SMS_READ, true);
+        values.put(SMS_SEEN, true);
         cr.update(INBOX_CONTENT_URI, values, WHERE_UNREAD_AND_ADDRESS, new String[] { phoneNumber });
     }
 
