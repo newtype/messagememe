@@ -51,8 +51,10 @@ public class SmsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        //if (SMS_RECEIVED_INTENT.equals(intent.getAction())) {
-        if (true) {
+        if (AUTO_RESPONSE_INTENT.equals(intent.getAction())) {
+            handleSendIntent(context, intent);
+        }
+        else {
             handleIncomingSms(context, intent);
         }
     }
