@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.WRITE_SMS" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
@@ -31,8 +32,10 @@
             <!-- set priority to max int to prevent other apps from consuming the intent -->
             <intent-filter android:priority="2147483647">
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
-                <action android:name="com.github.messageme.AUTO_RESPONSE" />
             </intent-filter>
+        </receiver>
+        <receiver android:name=".SmsSender">
+            <action android:name="com.github.messageme.AUTO_RESPONSE" />
         </receiver>
     </application>
 

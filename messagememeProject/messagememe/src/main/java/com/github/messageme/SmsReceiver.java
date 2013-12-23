@@ -30,23 +30,20 @@ import java.io.InputStream;
 public class SmsReceiver extends BroadcastReceiver {
 
     private static final String TAG = "SmsReceiver";
-    private static final String AUTO_RESPONSE_INTENT = "com.github.messageme.AUTO_RESPONSE";
-    private static final String DESTINATION_ADDRESS = "destinationAddress";
-    private static final String BODY = "body";
+    private static final String SMS_RECEIVED_INTENT = "android.provider.Telephony.SMS_RECEIVED";
+    public static final String DESTINATION_ADDRESS = "destinationAddress";
+    public static final String BODY = "body";
     private static final int PENDING_POSITIVE = 0;
     private static final int PENDING_NEGATIVE = 1;
-    private static final String NOTIFICATION_ID = "notificationId";
+    public static final String NOTIFICATION_ID = "notificationId";
     private static final int PENDING_TIME = 2;
-    private static final boolean LOG_SMS_ONLY = false;
+    public static final boolean LOG_SMS_ONLY = false;
     private static int currentNotificationId = 0;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        
-        if (AUTO_RESPONSE_INTENT.equals(intent.getAction())) {
-            handleSendIntent(context, intent);
-        }
-        else {
+        //if (SMS_RECEIVED_INTENT.equals(intent.getAction())) {
+        if (true) {
             handleIncomingSms(context, intent);
         }
     }
@@ -72,27 +69,6 @@ public class SmsReceiver extends BroadcastReceiver {
         } catch (Exception e) {
             Log.e(TAG, "Error in getting message", e);
         }
-    }
-
-    private void handleSendIntent(Context context, Intent intent) {
-        Log.v(TAG, "handleSendIntent");
-
-        String destination = intent.getStringExtra(DESTINATION_ADDRESS);
-        String body = intent.getStringExtra(BODY);
-
-        Log.v(TAG, "Send \"" + body + "\" to " + destination);
-
-        if (LOG_SMS_ONLY) {
-            Toast.makeText(context, "Fake send to " + destination, Toast.LENGTH_LONG).show();
-        }
-        else {
-            SmsManager.getDefault().sendTextMessage(destination, null, body, null, null);
-        }
-
-        // clear the notification
-        NotificationManager notificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(intent.getIntExtra(NOTIFICATION_ID, -1));
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -196,7 +172,7 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     private Intent buildQuickResponseIntent(Context context, String destinationAddress, String body, int notificationId) {
-        Intent quickResponseIntent = new Intent(AUTO_RESPONSE_INTENT);
+        Intent quickResponseIntent = new Intent(SmsSender.AUTO_RESPONSE_INTENT);
         quickResponseIntent.putExtra(DESTINATION_ADDRESS, destinationAddress);
         quickResponseIntent.putExtra(BODY, body);
         quickResponseIntent.putExtra(NOTIFICATION_ID, currentNotificationId);
