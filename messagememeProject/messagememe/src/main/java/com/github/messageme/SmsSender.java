@@ -17,11 +17,15 @@ public class SmsSender extends BroadcastReceiver {
 
     private static final String TAG = "SmsSender";
     public static final String AUTO_RESPONSE_INTENT = "com.github.messageme.AUTO_RESPONSE";
+    private SmsDatabase smsDatabase;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         if (AUTO_RESPONSE_INTENT.equals(intent.getAction())) {
             handleSendIntent(context, intent);
+        }
+        else {
+            Log.e(TAG, "Received unknown intent: " + intent);
         }
     }
 
@@ -37,12 +41,25 @@ public class SmsSender extends BroadcastReceiver {
             Toast.makeText(context, "Fake send to " + destination, Toast.LENGTH_LONG).show();
         }
         else {
+            // TODO: Set pending intents for success/fail and alert the user on failure
+            // and maybe don't write to sent messages if it failed to send
             SmsManager.getDefault().sendTextMessage(destination, null, body, null, null);
+
+            if (smsDatabase == null) {
+                smsDatabase = new SmsDatabase(context.getContentResolver());
+            }
+            smsDatabase.markRead(destination);
+            smsDatabase.writeSentMessage(destination, body);
         }
 
         // clear the notification
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(intent.getIntExtra(SmsReceiver.NOTIFICATION_ID, -1));
+
+        if (smsDatabase == null) {
+            smsDatabase = new SmsDatabase(context.getContentResolver());
+        }
+        smsDatabase.checkUnregisterObserver();
     }
 }
