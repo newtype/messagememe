@@ -36,13 +36,14 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private static final String TAG = "SmsReceiver";
     private static final String AUTO_RESPONSE_INTENT = "com.github.messageme.AUTO_RESPONSE";
-    private static final String DESTINATION_ADDRESS = "destinationAddress";
-    private static final String BODY = "body";
+    private static final String SMS_RECEIVED_INTENT = "android.provider.Telephony.SMS_RECEIVED";
+    public static final String DESTINATION_ADDRESS = "destinationAddress";
+    public static final String BODY = "body";
     private static final int PENDING_POSITIVE = 0;
     private static final int PENDING_NEGATIVE = 1;
-    private static final String NOTIFICATION_ID = "notificationId";
+    public static final String NOTIFICATION_ID = "notificationId";
     private static final int PENDING_TIME = 2;
-    private static final boolean LOG_SMS_ONLY = false;
+    public static final boolean LOG_SMS_ONLY = false;
     private static final String NOTIFICATION_MESSAGE_SEPARATOR = "   ";
 
     private final NotificationIdManager idManager = new StaticVarNotificationIdManager();
@@ -50,7 +51,6 @@ public class SmsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        
         if (AUTO_RESPONSE_INTENT.equals(intent.getAction())) {
             handleSendIntent(context, intent);
         }
