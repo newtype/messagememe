@@ -7,5 +7,6 @@
     <string name="response_yes">Sounds good</string>
     <string name="response_time">What time?</string>
     <string name="response_no">Nah</string>
+    <string name="welcome">Message Meme is successfully installed.  When you get new text messages, it will add a notification that allows you to quick reply without needing to use the messaging app.</string>
 
 </resources>
