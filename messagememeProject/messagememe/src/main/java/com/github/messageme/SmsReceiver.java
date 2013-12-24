@@ -16,10 +16,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.github.messageme.interfaces.NotificationIdManager;
 
@@ -43,7 +41,6 @@ public class SmsReceiver extends BroadcastReceiver {
     private static final int PENDING_NEGATIVE = 1;
     public static final String NOTIFICATION_ID = "notificationId";
     private static final int PENDING_TIME = 2;
-    public static final boolean LOG_SMS_ONLY = false;
     private static final String NOTIFICATION_MESSAGE_SEPARATOR = "   ";
 
     private final NotificationIdManager idManager = new StaticVarNotificationIdManager();

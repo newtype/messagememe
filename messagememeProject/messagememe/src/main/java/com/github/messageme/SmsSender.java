@@ -8,15 +8,18 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.util.concurrent.BrokenBarrierException;
-
 /**
+ * BroadcastReceiver for Intent to send an SMS message.
+ * The notification generates the Intent and this class
+ * handles it by sending the message.
+ *
  * Created by ryan on 11/17/13.
  */
 public class SmsSender extends BroadcastReceiver {
 
     private static final String TAG = "SmsSender";
     public static final String AUTO_RESPONSE_INTENT = "com.github.messageme.AUTO_RESPONSE";
+    public static final boolean LOG_SMS_ONLY = false;
     private SmsDatabase smsDatabase;
 
     @Override
@@ -37,7 +40,7 @@ public class SmsSender extends BroadcastReceiver {
 
         Log.v(TAG, "Send \"" + body + "\" to " + destination);
 
-        if (SmsReceiver.LOG_SMS_ONLY) {
+        if (LOG_SMS_ONLY) {
             Toast.makeText(context, "Fake send to " + destination, Toast.LENGTH_LONG).show();
         }
         else {
@@ -48,7 +51,6 @@ public class SmsSender extends BroadcastReceiver {
             if (smsDatabase == null) {
                 smsDatabase = new SmsDatabase(context.getContentResolver());
             }
-            smsDatabase.markRead(destination);
             smsDatabase.writeSentMessage(destination, body);
         }
 
@@ -60,6 +62,7 @@ public class SmsSender extends BroadcastReceiver {
         if (smsDatabase == null) {
             smsDatabase = new SmsDatabase(context.getContentResolver());
         }
+        smsDatabase.markRead(destination);
         smsDatabase.checkUnregisterObserver();
     }
 }

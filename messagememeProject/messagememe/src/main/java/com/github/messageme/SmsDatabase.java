@@ -19,6 +19,7 @@ import java.util.List;
  * Created by keith on 12/16/13.
  */
 public class SmsDatabase {
+    public static final Uri SMS_CONTENT_URI = Uri.parse("content://sms");
     public static final Uri INBOX_CONTENT_URI = Uri.parse("content://sms/inbox");
     public static final Uri SENT_CONTENT_URI = Uri.parse("content://sms/sent");
     public static final String SMS_ADDRESS = "address";
@@ -160,7 +161,7 @@ public class SmsDatabase {
      * Create the SMS database observer if necessary.
      *
      * @param context Android context, used by SmsObserver
-     * @param idManager
+     * @param idManager to access the notification IDs of previous notifications
      */
     public void checkCreateObserver(Context context, NotificationIdManager idManager) {
         Log.v(TAG, "checkCreateObserver");
@@ -173,7 +174,7 @@ public class SmsDatabase {
         // TODO: Handler should be set on current thread
         observer = new SmsObserver(null, context, idManager);
 
-        cr.registerContentObserver(Uri.parse("content://sms"), true, observer);
+        cr.registerContentObserver(SMS_CONTENT_URI, true, observer);
 
         Log.v(TAG, "\tregistered");
     }
